@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--jQuery文件，务必在bootstrap.main.js之前引入-->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.js"></script>
+    <!--新 bootstrap 4 核心 css文件  -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+
+    <script>
+        //初始化
+        $(function () {
+            empSort("");
+        });
+        var data_page;
+        var data_type;
+        var sortType="";
+        function empSort(type) {
+            var pagenums = 0;
+            if(data_page!=null && type=='top'){//首页
+                pagenums = 0;
+                data_type="";
+                sortType="";
+            }else if (data_page!=null &&  type=='pre'){//上一页
+                if (data_page.hasPreviousPage){
+                    pagenums=data_page.prePage;
+                }else {
+                    return;
+                }
+            }else if (data_page!=null && type=='next'){//下一页
+                if ( data_page.hasNextPage){
+                    pagenums=data_page.nextPage;
+                }else {
+                    return;
+                }
+            }else if (data_page!=null && type=='end'){//尾页
+                pagenums=data_page.pages;
+            }else if(type==""){
+                data_type="";
+                sortType="";
+            }else {
+                data_type=type;
+                //点击字段会升序或者降序
+                if (type==data_type){//+" desc"
+                    if (sortType==" desc"){
+                        sortType=" asc";
+                    }else{
+                        sortType=" desc";
+                    }
+                }else {
+                    sortType=" desc";
+                }
+            }
+            getData(pagenums,data_type+sortType);
+        };
+
+        function getData(pageNum,sortType) {
+            $.ajax({
+                type: "GET",
+                url: "/emp/findallemps",
+                data: {"pageNum":pageNum,"type":sortType},
+                dataType: "json",
+                success: function (data) {
+                    console.log(data)
+                    var str = "";//把数据组装起来
+                    //清空table中的html
+                    $("#tableText").html("");
+
+                    $("#table_pagenum").html(data.pageNum);
+                    $("#table_pages").html(data.pages);
+                    $("#table_pagetotal").html(data.total);
+                    data_page=data;
+
+                    for (var i = 0; i < data.list.length; i++) {
+                        str = "<tr>" +
+                            "<td>"+data.list[i].empno + "</td>" +
+                            "<td>"+data.list[i].ename + "</td>" +
+                            "<td>"+data.list[i].job + "</td>" +
+                            "<td>"+data.list[i].sal + "</td>" +
+                            "<td>"+data.list[i].mgr + "</td>" +
+                            "<td>"+data.list[i].comm + "</td>" +
+                            "<td>"+data.list[i].deptno + "</td>" +
+                            "</tr>";
+                        $("#tableText").append(str);
+                        //  $("#tableText").html(str);//把拼好的样式填到指定的位置，一个Ajax的表格刷新功能就完成了
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<div align="center">
+    <table border="1" cellpadding="0" cellspacing="0" width="60%">
+        <thead>
+            <tr>
+                <th onclick="empSort('empno')">empno</th>
+                <th onclick="empSort('ename')">ename</th>
+                <th onclick="empSort('job')">job</th>
+                <th onclick="empSort('sal')">sal</th>
+                <th onclick="empSort('mgr')">mgr</th>
+                <th onclick="empSort('comm')">comm</th>
+                <th onclick="empSort('deptno')">deptno</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableText">
+<!--            <tr th:each="emp:${pages.getList()}">-->
+<!--                <th th:text="${emp.empno}">1001</th>-->
+<!--                <th th:text="${emp.ename}">zhangsan</th>-->
+<!--                <th th:text="${emp.job}">clerk</th>-->
+<!--                <th th:text="${emp.sal}">3000</th>-->
+<!--                <th th:text="${emp.mgr}">1001</th>-->
+<!--                <th th:text="${emp.comm}">300</th>-->
+<!--                <th th:text="${emp.deptno}">10</th>-->
+<!--            </tr>-->
+        </tbody>
+
+    </table>
+    <p id="table_count">当前 <span id="table_pagenum">1</span> 页,总
+        <span id="table_pages"  >10</span>页，共
+        <span id="table_pagetotal"  >100</span> 条记录
+    </p>
+
+<!--    <a onclick="empSort('top')">首页</a>-->
+<!--    <a onclick="empSort('pre')">上一页</a>-->
+<!--    <a onclick="empSort('next')">下一页</a>-->
+<!--    <a onclick="empSort('end')">尾页</a>-->
+    <p>
+        <button onclick="empSort('top')">首页</button>
+        <button onclick="empSort('pre')">上一页</button>
+        <button onclick="empSort('next')">下一页</button>
+        <button onclick="empSort('end')">尾页</button>
+    </p>
+
+
+<!--    <p id="table_count">当前 <span id="table_pagenum" th:text="${pages.getPageNum()}">1</span> 页,总-->
+<!--        <span id="table_pages" th:text="${pages.getPages()}">10</span>页，共-->
+<!--        <span id="table_pagetotal" th:text="${pages.getTotal()}">100</span> 条记录-->
+<!--    </p>-->
+<!--    <a th:href="@{/emp/findallemp}">首页</a>-->
+<!--    <a th:href="@{/emp/findallemp(pageNum=${pages.isHasPreviousPage()}?${pages.getPrePage()}:0)}">上一页</a>-->
+<!--    <a th:href="@{/emp/findallemp(pageNum=${pages.isHasNextPage()}?${pages.getNextPage()}:${pages.getPages()})}">下一页</a>-->
+<!--    <a th:href="@{/emp/findallemp(pageNum=${pages.getPages()})}">尾页</a>-->
+</div>
+</body>
+</html>
